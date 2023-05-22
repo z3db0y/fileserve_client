@@ -91,12 +91,6 @@ function connect() {
                 case 'web2pc':
                     if(data.data.cmd === 'ls') {
                         if(data.data.dir === '') {
-                            var dirList = fs.readdirSync('/', { withFileTypes: true }).map(x => {
-                                return {
-                                    name: x.name,
-                                    type: x.isDirectory() ? 'folder' : 'file'
-                                }
-                            });
                             socket.send(JSON.stringify({
                                 data: {
                                     cmd: 'ls',
@@ -106,22 +100,26 @@ function connect() {
                                             name: x,
                                             type: 'folder'
                                         }
-                                    }) : dirList
+                                    }) : fs.readdirSync('/', { withFileTypes: true }).map(x => {
+                                        return {
+                                            name: x.name,
+                                            type: x.isDirectory() ? 'folder' : 'file'
+                                        }
+                                    })
                                 },
                                 to: data.from
                             }));
                         } else {
-                            var dirList = fs.readdirSync('/', { withFileTypes: true }).map(x => {
-                                return {
-                                    name: x.name,
-                                    type: x.isDirectory() ? 'folder' : 'file'
-                                }
-                            })
                             socket.send(JSON.stringify({
                                 data: {
                                     cmd: 'ls',
                                     dir: data.data.dir,
-                                    list: dirList
+                                    list: fs.readdirSync(data.data.dir, { withFileTypes: true }).map(x => {
+                                        return {
+                                            name: x.name,
+                                            type: x.isDirectory() ? 'folder' : 'file'
+                                        }
+                                    })
                                 },
                                 to: data.from
                             }));
