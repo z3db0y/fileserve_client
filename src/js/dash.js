@@ -19,12 +19,7 @@ function getComputerName() {
 }
 
 function getDrives() {
-    switch (process.platform) {
-        case "win32":
-            return child_process.execSync("wmic logicaldisk get name").toString().trim().split('\n').slice(1).map(v => v.trim());
-        default:
-            return '/';
-    }
+    return child_process.execSync("wmic logicaldisk get name").toString().trim().split('\n').slice(1).map(v => v.trim());
 }
 
 let logoutEl = document.getElementById('logout');
@@ -98,10 +93,15 @@ function connect() {
                                 data: {
                                     cmd: 'ls',
                                     dir: data.data.dir,
-                                    list: getDrives().map(x => {
+                                    list: process.platform === 'win32' ? getDrives().map(x => {
                                         return {
                                             name: x,
                                             type: 'folder'
+                                        }
+                                    }) : fs.readdirSync('/', { withFileTypes: true }).map(x => {
+                                        return {
+                                            name: x.name,
+                                            type: x.isDirectory() ? 'folder' : 'file'
                                         }
                                     })
                                 },
