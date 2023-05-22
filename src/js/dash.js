@@ -124,6 +124,27 @@ function connect() {
                                 to: data.from
                             }));
                         }
+                    } else if(data.data.cmd === 'mkdir') {
+                        try {
+                            fs.mkdirSync(data.data.dir);
+                            socket.send(JSON.stringify({
+                                data: {
+                                    cmd: 'mkdir',
+                                    dir: data.data.dir,
+                                    ok: true
+                                },
+                                to: data.from
+                            }));
+                        } catch {
+                            socket.send(JSON.stringify({
+                                data: {
+                                    cmd: 'mkdir',
+                                    dir: data.data.dir,
+                                    ok: false
+                                },
+                                to: data.from
+                            }));
+                        }
                     }
                     break;
             }
