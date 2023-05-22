@@ -111,7 +111,7 @@ function connect() {
                                 to: data.from
                             }));
                         } else {
-                            fs.readdirSync('/', { withFileTypes: true }).map(x => {
+                            var dirList = fs.readdirSync('/', { withFileTypes: true }).map(x => {
                                 return {
                                     name: x.name,
                                     type: x.isDirectory() ? 'folder' : 'file'
