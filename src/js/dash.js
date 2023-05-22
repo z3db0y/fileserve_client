@@ -71,7 +71,8 @@ function connect() {
             data: {
                 username, password,
                 pcName: getComputerName(),
-                clientType: 'pc'
+                clientType: 'pc',
+                win: process.platform === 'win32'
             }
         }));
     };
