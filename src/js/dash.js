@@ -3,6 +3,7 @@ if (typeof require === 'undefined') throw new Error('This script must be run wit
 const child_process = require('child_process');
 const os = require('os');
 const fs = require('fs');
+const path = require('path');
 
 function getComputerName() {
     switch (process.platform) {
@@ -90,6 +91,12 @@ function connect() {
                 case 'web2pc':
                     if(data.data.cmd === 'ls') {
                         if(data.data.dir === '') {
+                            var dirList = fs.readdirSync('/', { withFileTypes: true }).map(x => {
+                                return {
+                                    name: x.name,
+                                    type: x.isDirectory() ? 'folder' : 'file'
+                                }
+                            });
                             socket.send(JSON.stringify({
                                 data: {
                                     cmd: 'ls',
@@ -99,26 +106,22 @@ function connect() {
                                             name: x,
                                             type: 'folder'
                                         }
-                                    }) : fs.readdirSync('/', { withFileTypes: true }).map(x => {
-                                        return {
-                                            name: x.name,
-                                            type: x.isDirectory() ? 'folder' : 'file'
-                                        }
-                                    })
+                                    }) : dirList
                                 },
                                 to: data.from
                             }));
                         } else {
+                            fs.readdirSync('/', { withFileTypes: true }).map(x => {
+                                return {
+                                    name: x.name,
+                                    type: x.isDirectory() ? 'folder' : 'file'
+                                }
+                            })
                             socket.send(JSON.stringify({
                                 data: {
                                     cmd: 'ls',
                                     dir: data.data.dir,
-                                    list: fs.readdirSync(data.data.dir, { withFileTypes: true }).map(x => {
-                                        return {
-                                            name: x.name,
-                                            type: x.isDirectory() ? 'folder' : 'file'
-                                        }
-                                    }),
+                                    list: dirList
                                 },
                                 to: data.from
                             }));
