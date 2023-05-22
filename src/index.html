@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<head>
+    <title>FileServe</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/index.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h1>FileServe Client</h1>
+    <span style="text-align:center">Make accessing files great again.</span>
+    <span id="website" onclick="window.open('https:/\/fileserve.z3db0y.com', '_blank')">Website</span>
+    <div class="prompt">
+        <input type="text" id="username" placeholder="Username/Email">
+        <input type="password" id="password" placeholder="Password">
+        <label><span id="remember"></span><span>Remember me</span></label>
+        <button id="submit">Login</button>
+        <span id="error"></span>
+    </div>
+</body>
+<script src="js/util.js"></script>
+<script src="js/login.js"></script>

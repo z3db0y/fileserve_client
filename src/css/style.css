@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Prompt&display=swap');
+
+html, body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background: #000;
+}
+
+* {
+    font-family: Prompt;
+    color: #fff;
+}

@@ -1,0 +1,55 @@
+button {
+    margin: 10px;
+    border: 3px solid #fff;
+    background: none;
+    outline: none;
+    font-size: 125%;
+    border-radius: 3px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+button:hover {
+    color: #000;
+    background: #fff;
+}
+
+#status::before {
+    content: '\25CF  ';
+}
+
+#status.disconnected::before {
+    color: #f00;
+}
+
+#status.connected::before {
+    color: #0f0;
+}
+
+#status.connecting::before {
+    color: #ff0;
+}
+
+#website {
+    margin: 10px 0;
+    user-select: none;
+    cursor: pointer;
+    position: relative;
+}
+
+#website::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    transition: .2s;
+    height: 1px;
+    width: 0;
+}
+
+#website:hover::after {
+    width: 100%;
+}

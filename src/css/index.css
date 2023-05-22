@@ -1,0 +1,85 @@
+.prompt {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.prompt > input {
+    margin: 10px;
+    width: 30%;
+    border: 3px solid #fff;
+    background: none;
+    outline: none;
+    font-size: 125%;
+    border-radius: 3px;
+    padding: 5px 10px;
+}
+
+.prompt button {
+    margin: 10px;
+    border: 3px solid #fff;
+    background: none;
+    outline: none;
+    font-size: 125%;
+    border-radius: 3px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.prompt button:hover {
+    color: #000;
+    background: #fff;
+}
+
+.prompt label {
+    display: flex;
+    font-size: 125%;
+    align-items: center;
+}
+
+.prompt label #remember {
+    height: 1.25em;
+    width: 1.25em;
+    background: none;
+    border: 3px solid #fff;
+    box-sizing: border-box;
+    border-radius: 3px;
+    margin-right: 10px;
+    transition: .2s;
+    cursor: pointer;
+}
+
+.prompt label #remember[checked] {
+    background: #fff;
+}
+
+#error {
+    margin-top: 10px;
+}
+
+#website {
+    margin-top: 10px;
+    user-select: none;
+    cursor: pointer;
+    position: relative;
+}
+
+#website::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    transition: .2s;
+    height: 1px;
+    width: 0;
+}
+
+#website:hover::after {
+    width: 100%;
+}
