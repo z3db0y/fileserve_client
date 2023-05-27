@@ -145,6 +145,46 @@ function connect() {
                                 to: data.from
                             }));
                         }
+                    } else if(data.data.cmd === 'upload') {
+                        let dataUri = data.data.data;
+                        let filePath = path.join(data.data.dir, data.data.name);
+                        if(!dataUri.startsWith('data:')) {
+                            socket.send(JSON.stringify({
+                                data: {
+                                    cmd: 'upload',
+                                    dir: data.data.dir,
+                                    name: data.data.name,
+                                    ok: false
+                                },
+                                to: data.from
+                            }));
+                            break;
+                        } else {
+                            dataUri = dataUri.split(',')[1];
+                            let buffer = Buffer.from(dataUri, 'base64');
+                            try {
+                                fs.writeFileSync(filePath, buffer);
+                                socket.send(JSON.stringify({
+                                    data: {
+                                        cmd: 'upload',
+                                        dir: data.data.dir,
+                                        name: data.data.name,
+                                        ok: true
+                                    },
+                                    to: data.from
+                                }));
+                            } catch {
+                                socket.send(JSON.stringify({
+                                    data: {
+                                        cmd: 'upload',
+                                        dir: data.data.dir,
+                                        name: data.data.name,
+                                        ok: false
+                                    },
+                                    to: data.from
+                                }));
+                            }
+                        }
                     }
                     break;
             }
