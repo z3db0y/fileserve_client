@@ -2,6 +2,8 @@ const { app, BrowserWindow, Notification, Tray, Menu, powerSaveBlocker, shell } 
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
+let wishToQuit = false;
+
 app.whenReady().then(() => {
     const win = new BrowserWindow({
         webPreferences: {
@@ -20,6 +22,7 @@ app.whenReady().then(() => {
     win.loadFile('src/index.html');
 
     win.on('close', ev => {
+        if(wishToQuit) return;
         ev.preventDefault();
         win.hide();
 
@@ -31,23 +34,6 @@ app.whenReady().then(() => {
             title: 'FileServe',
             body: 'The app is still running in the background'
         }).show();
-
-        const tray = new Tray(path.join(__dirname, 'src/assets/icon.png'));
-        tray.setToolTip('FileServe');
-        tray.setContextMenu(Menu.buildFromTemplate([
-            {
-                label: 'Show App',
-                click: () => {
-                    win.show();
-                }
-            },
-            {
-                label: 'Quit',
-                click: () => {
-                    win.destroy();
-                }
-            }
-        ]));
         return false;
     });
 
@@ -60,11 +46,49 @@ app.whenReady().then(() => {
 
     win.webContents.on('will-navigate', (event, url) => {
         let urlObj = new URL(url);
-        if(urlObj.protocol !== 'file:') {
+        if (urlObj.protocol !== 'file:') {
             event.preventDefault();
             shell.openExternal(url);
         }
     });
+
+    const tray = new Tray(path.join(__dirname, 'src/assets/icon.png'));
+    tray.setToolTip('FileServe');
+
+    let hideMenu = Menu.buildFromTemplate([
+        {
+            label: 'Hide App',
+            click: () => {
+                win.hide();
+                tray.setContextMenu(showMenu);
+            }
+        },
+        {
+            label: 'Quit',
+            click: () => {
+                wishToQuit = true;
+                win.close();
+            }
+        }
+    ]);
+
+    let showMenu = Menu.buildFromTemplate([
+        {
+            label: 'Show App',
+            click: () => {
+                win.show();
+                tray.setContextMenu(hideMenu);
+            }
+        },
+        {
+            label: 'Quit',
+            click: () => {
+                app.quit();
+            }
+        }
+    ]);
+
+    tray.setContextMenu(hideMenu);
 });
 
 app.on('window-all-closed', () => {
@@ -73,12 +97,13 @@ app.on('window-all-closed', () => {
     }
 });
 
-app.on('before-quit', event => {
-    event.preventDefault();
-    autoUpdater.on('update-downloaded', () => {
-        autoUpdater.quitAndInstall(true);
+app.on('before-quit', async () => {
+    await new Promise(resolve => {
+        autoUpdater.on('update-downloaded', () => {
+            autoUpdater.quitAndInstall(true);
+        });
+        autoUpdater.on('update-not-available', () => resolve());
+        autoUpdater.on('error', () => resolve());
+        autoUpdater.checkForUpdates();
     });
-    autoUpdater.on('update-not-available', () => app.exit());
-    autoUpdater.on('error', () => app.exit());
-    autoUpdater.checkForUpdates();
 });

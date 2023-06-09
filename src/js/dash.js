@@ -283,7 +283,7 @@ function connect() {
                                 let zipFile = new AdmZip();
                                 zipFile.addLocalFolder(path.join(data.data.dir, data.data.file.name));
                                 let zipData = zipFile.toBuffer();
-                                zipData = 'data:application/zip;base64,' + zipData.toString('base64');
+                                downloadData = 'data:application/zip;base64,' + zipData.toString('base64');
                             } else {
                                 let fileData = fs.readFileSync(path.join(data.data.dir, data.data.file.name));
                                 downloadData = 'data:' + mime.getType(path.extname(data.data.file.name).slice(1)) + ';base64,' + fileData.toString('base64');
@@ -300,7 +300,8 @@ function connect() {
                                             size: downloadData.length
                                         },
                                         downloadId
-                                    }
+                                    },
+                                    to: data.from
                                 }));
                             }
 
@@ -313,7 +314,8 @@ function connect() {
                                         size: downloadData.length
                                     },
                                     downloadId
-                                }
+                                },
+                                to: data.from
                             }));
                         } catch(e) {
                             socket.send(JSON.stringify({
