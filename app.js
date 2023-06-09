@@ -42,6 +42,7 @@ app.whenReady().then(() => {
         {
             label: 'Quit',
             click: () => {
+                wishToQuit = true;
                 app.quit();
             }
         }
