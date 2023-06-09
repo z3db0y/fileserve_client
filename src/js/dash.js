@@ -4,6 +4,8 @@ const child_process = require('child_process');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
+const AdmZip = require('adm-zip');
+const mime = require('mime');
 
 function getComputerName() {
     switch (process.platform) {
@@ -31,6 +33,8 @@ let socket;
 
 let username;
 let password;
+
+let currentUploads = {};
 
 if (!localStorage['fileServe_user'] || !localStorage['fileServe_pass']) {
     location.href = 'index.html';
@@ -146,46 +150,189 @@ function connect() {
                             }));
                         }
                     } else if(data.data.cmd === 'upload') {
-                        let dataUri = data.data.data;
-                        let filePath = path.join(data.data.dir, data.data.name);
-                        if(!dataUri.startsWith('data:')) {
-                            socket.send(JSON.stringify({
-                                data: {
-                                    cmd: 'upload',
-                                    dir: data.data.dir,
-                                    name: data.data.name,
-                                    ok: false
-                                },
-                                to: data.from
-                            }));
-                            break;
+                        if(!data.data.uploadId || !data.data.file) return;
+                        let uploadId = data.data.uploadId;
+                        if(!currentUploads[data.from]) currentUploads[data.from] = {};
+                        if(!currentUploads[data.from][uploadId]) {
+                            currentUploads[data.from][uploadId] = {
+                                file: data.data.file.name,
+                                data: data.data.file.chunk
+                            };
+                            if(!data.data.file.chunk.startsWith('data:')) delete currentUploads[data.from][uploadId].data;
                         } else {
-                            dataUri = dataUri.split(',')[1];
-                            let buffer = Buffer.from(dataUri, 'base64');
-                            try {
-                                fs.writeFileSync(filePath, buffer);
+                            if(!data.data.file.chunk) {
                                 socket.send(JSON.stringify({
                                     data: {
-                                        cmd: 'upload',
-                                        dir: data.data.dir,
-                                        name: data.data.name,
-                                        ok: true
+                                        cmd: 'u_ack',
+                                        uploadId,
+                                        size: currentUploads[data.from][uploadId].data.length
                                     },
                                     to: data.from
                                 }));
-                            } catch {
+                                try {
+                                    if(fs.existsSync(path.join(data.data.dir, currentUploads[data.from][uploadId].file))) throw new Error('File already exists.');
+                                    fs.writeFileSync(path.join(data.data.dir, currentUploads[data.from][uploadId].file), Buffer.from(currentUploads[data.from][uploadId].data.split(',')[1], 'base64'));
+                                    socket.send(JSON.stringify({
+                                        data: {
+                                            cmd: 'upload',
+                                            dir: data.data.dir,
+                                            file: {
+                                                name: currentUploads[data.from][uploadId].file
+                                            },
+                                            uploadId,
+                                            ok: true
+                                        },
+                                        to: data.from
+                                    }));
+                                } catch {
+                                    socket.send(JSON.stringify({
+                                        data: {
+                                            cmd: 'upload',
+                                            dir: data.data.dir,
+                                            file: {
+                                                name: currentUploads[data.from][uploadId].file
+                                            },
+                                            uploadId,
+                                            ok: false
+                                        },
+                                        to: data.from
+                                    }));
+                                }
+                            } else {
+                                currentUploads[data.from][uploadId].data += data.data.file.chunk;
                                 socket.send(JSON.stringify({
                                     data: {
-                                        cmd: 'upload',
-                                        dir: data.data.dir,
-                                        name: data.data.name,
-                                        ok: false
+                                        cmd: 'u_ack',
+                                        uploadId,
+                                        size: currentUploads[data.from][uploadId].data.length
                                     },
                                     to: data.from
                                 }));
                             }
                         }
+                    } else if(data.data.cmd === 'rename') {
+                        try {
+                            fs.renameSync(path.join(data.data.dir, data.data.file.name), path.join(data.data.dir, data.data.file.newName));
+                            socket.send(JSON.stringify({
+                                data: {
+                                    cmd: 'rename',
+                                    dir: data.data.dir,
+                                    file: {
+                                        name: data.data.file.name,
+                                        newName: data.data.file.newName
+                                    },
+                                    ok: true
+                                },
+                                to: data.from
+                            }));
+                        } catch {
+                            socket.send(JSON.stringify({
+                                data: {
+                                    cmd: 'rename',
+                                    dir: data.data.dir,
+                                    file: {
+                                        name: data.data.file.name,
+                                        newName: data.data.file.newName
+                                    },
+                                    ok: false
+                                },
+                                to: data.from
+                            }));
+                        }
+
+                    } else if(data.data.cmd === 'del') {
+                        try {
+                            if(!fs.existsSync(path.join(data.data.dir, data.data.file.name))) throw new Error('File does not exist.');
+                            if(fs.lstatSync(path.join(data.data.dir, data.data.file.name)).isDirectory()) {
+                                fs.rmdirSync(path.join(data.data.dir, data.data.file.name), { recursive: true });
+                            } else {
+                                fs.unlinkSync(path.join(data.data.dir, data.data.file.name));
+                            }
+                            socket.send(JSON.stringify({
+                                data: {
+                                    cmd: 'del',
+                                    dir: data.data.dir,
+                                    file: {
+                                        name: data.data.file.name
+                                    },
+                                    ok: true
+                                },
+                                to: data.from
+                            }));
+                        } catch {
+                            socket.send(JSON.stringify({
+                                data: {
+                                    cmd: 'del',
+                                    dir: data.data.dir,
+                                    file: {
+                                        name: data.data.file.name
+                                    },
+                                    ok: false
+                                },
+                                to: data.from
+                            }));
+                        }
+                    } else if(data.data.cmd === 'download') {
+                        try {
+                            if(!fs.existsSync(path.join(data.data.dir, data.data.file.name))) throw new Error('File does not exist.');
+                            
+                            let downloadId = data.data.downloadId;
+                            let downloadData;
+
+                            if(fs.lstatSync(path.join(data.data.dir, data.data.file.name)).isDirectory()) {
+                                let zipFile = new AdmZip();
+                                zipFile.addLocalFolder(path.join(data.data.dir, data.data.file.name));
+                                let zipData = zipFile.toBuffer();
+                                zipData = 'data:application/zip;base64,' + zipData.toString('base64');
+                            } else {
+                                let fileData = fs.readFileSync(path.join(data.data.dir, data.data.file.name));
+                                downloadData = 'data:' + mime.getType(path.extname(data.data.file.name).slice(1)) + ';base64,' + fileData.toString('base64');
+                            }
+
+                            for(let i = 0; i < downloadData.length; i+= 1024 * 1024) { // 1MB chunk size
+                                socket.send(JSON.stringify({
+                                    data: {
+                                        cmd: 'download',
+                                        dir: data.data.dir,
+                                        file: {
+                                            name: data.data.file.name,
+                                            chunk: downloadData.substring(i, i + 1024 * 1024),
+                                            size: downloadData.length
+                                        },
+                                        downloadId
+                                    }
+                                }));
+                            }
+
+                            socket.send(JSON.stringify({
+                                data: {
+                                    cmd: 'download',
+                                    dir: data.data.dir,
+                                    file: {
+                                        name: data.data.file.name,
+                                        size: downloadData.length
+                                    },
+                                    downloadId
+                                }
+                            }));
+                        } catch(e) {
+                            socket.send(JSON.stringify({
+                                data: {
+                                    cmd: 'download',
+                                    dir: data.data.dir,
+                                    file: {
+                                        name: data.data.file.name
+                                    },
+                                    ok: false
+                                },
+                                to: data.from
+                            }));
+                            return;
+                        }
                     }
+                    break;
+                case 'web_disconnect':
+                    if(currentUploads[data.from]) delete currentUploads[data.from];
                     break;
             }
         } catch { }
