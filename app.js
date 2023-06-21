@@ -5,12 +5,21 @@ const path = require('path');
 let wishToQuit = false;
 
 app.whenReady().then(() => {
+    if(!app.requestSingleInstanceLock()) app.quit();
+    app.on('second-instance', () => {
+        if (win) {
+            if (win.isMinimized()) win.restore();
+            if (!win.isVisible()) win.show();
+            win.focus();
+        }
+    });
+
     const win = new BrowserWindow({
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false
         },
-        title: 'FileServe',
+        title: 'FileServe Client',
         icon: path.join(__dirname, 'src/assets/icon.png'),
         show: false
     });

@@ -23,6 +23,7 @@
     "electron-builder": "^24.4.0"
   },
   "build": {
+    "productName": "FileServe Client",
     "appId": "com.z3db0y.fileserve_client",
     "artifactName": "${productName}-${version}-${platform}-${arch}.${ext}",
     "mac": {
