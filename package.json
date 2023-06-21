@@ -6,7 +6,11 @@
   "scripts": {
     "publish": "npx electron-builder --publish always"
   },
-  "author": "z3db0y",
+  "author": {
+    "name": "z3db0y",
+    "email": "contact@z3db0y.com",
+    "url": "https://z3db0y.com"
+  },
   "license": "ISC",
   "dependencies": {
     "adm-zip": "^0.5.10",
@@ -17,7 +21,6 @@
     "electron": "^24.3.1",
     "electron-builder": "^24.4.0"
   },
-  "email": "contact@z3db0y.com",
   "build": {
     "appId": "com.z3db0y.fileserve_client",
     "artifactName": "${productName}-${version}-${platform}-${arch}.${ext}",
