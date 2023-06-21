@@ -289,14 +289,14 @@ function connect() {
                                 downloadData = 'data:' + mime.getType(path.extname(data.data.file.name).slice(1)) + ';base64,' + fileData.toString('base64');
                             }
 
-                            for(let i = 0; i < downloadData.length; i+= 1024 * 1024) { // 1MB chunk size
+                            for(let i = 0; i < downloadData.length; i+= 1024 * 1024 * 10) { // 10MB chunk size
                                 socket.send(JSON.stringify({
                                     data: {
                                         cmd: 'download',
                                         dir: data.data.dir,
                                         file: {
                                             name: data.data.file.name,
-                                            chunk: downloadData.substring(i, i + 1024 * 1024),
+                                            chunk: downloadData.substring(i, i + 1024 * 1024 * 10),
                                             size: downloadData.length
                                         },
                                         downloadId
