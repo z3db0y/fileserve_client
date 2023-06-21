@@ -15,5 +15,27 @@
   },
   "devDependencies": {
     "electron": "^24.3.1"
+  },
+  "build": {
+    "appId": "com.z3db0y.fileserve_client",
+    "artifactName": "${productName}-${version}-${platform}-${arch}.${ext}",
+    "mac": {
+      "category": "public.app-category.utilities"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": [
+        "deb",
+        "AppImage"
+      ]
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "z3db0y",
+      "repo": "fileserve_client",
+      "releaseType": "release"
+    }
   }
 }
