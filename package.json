@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "publish": "npx electron-builder --publish always"
   },
   "author": "z3db0y",
   "license": "ISC",
