@@ -10,6 +10,7 @@ app.whenReady().then(() => {
             nodeIntegration: true,
             contextIsolation: false
         },
+        title: 'FileServe',
         icon: path.join(__dirname, 'src/assets/icon.png'),
         show: false
     });
@@ -53,7 +54,7 @@ app.whenReady().then(() => {
     tray.setContextMenu(hideMenu);
 
     win.setMenu(null);
-    win.webContents.openDevTools({ mode: 'detach' });
+    if(!app.isPackaged) win.webContents.openDevTools({ mode: 'detach' });
     win.once('ready-to-show', () => {
         win.show();
     });

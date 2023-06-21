@@ -6,6 +6,10 @@ const fs = require('fs');
 const path = require('path');
 const AdmZip = require('adm-zip');
 const mime = require('mime');
+const AutoLaunch = require('auto-launch');
+const autoLaunch = new AutoLaunch({
+    name: 'FileServe'
+});
 
 function getComputerName() {
     switch (process.platform) {
@@ -28,6 +32,16 @@ function getDrives() {
 let logoutEl = document.getElementById('logout');
 let usernameEl = document.getElementById('username');
 let statusEl = document.getElementById('status');
+let startupEl = document.getElementById('startup');
+
+startupEl.onclick = () => {
+    startupEl.checked = !startupEl.checked;
+    startupEl[(startupEl.checked ? 'setAttribute' : 'removeAttribute')]('checked', '');
+    if(startupEl.checked) autoLaunch.enable();
+    else autoLaunch.disable();
+};
+
+if(autoLaunch.isEnabled()) startupEl.checked = true;
 
 let socket;
 
